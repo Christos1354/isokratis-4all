@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Διαστήματα Κλιμάκων</title>
+<meta name="theme-color" content="#2a0a10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Διαστήματα">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Christos S Magides · cyp11111@gmail.com · Έκδοση 29-10-2026 (6) · μετρονόμος με φωτάκι -->
+<style>
+:root{
+  --bg:#2b1d14; --card:#3b2a1e; --gold:#e8b84a; --lilac:#c9a6ff; --text:#fff7e8; --muted:#e9d8bd;
+  --c12:#3d8bff; --c10:#22b07d; --c8:#ff9f1c; --csmall:#ff4d6d; --cbig:#a259ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-user-select:none;user-select:none}
+.app{height:100vh;height:100dvh;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:6px;
+  padding:calc(6px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:8px}
+#bScale,#bTimbre{flex:1;min-width:0;font-size:18px;font-weight:800;padding:8px 6px;border-radius:14px;border:3px solid var(--gold);background:#5a3f22;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bTimbre{background:#4a3466;border-color:var(--lilac)}
+.info{background:#1d130d;border:2px solid var(--lilac);border-radius:12px;padding:5px 8px;text-align:center;font-size:18px;min-height:34px;line-height:1.25}
+.info b{color:var(--gold)}
+.ladder{flex:1 1 auto;min-height:0;max-height:430px;display:grid;grid-template-columns:1fr 118px;grid-template-rows:repeat(16,1fr);column-gap:8px}
+.note{display:flex;align-items:center;justify-content:space-between;font-size:21px;font-weight:800;padding:0 14px;margin:1.5px 0;border-radius:12px;border:none;color:#2b1d14;background:linear-gradient(#ffd877,#e8b84a);box-shadow:0 3px 0 #9b7120;min-height:0}
+.note span.hz{font-size:14px;font-weight:600;color:#5a3f22}
+.note.play{background:linear-gradient(#ffffff,#ffe9a8);box-shadow:0 0 14px #fff2b0}
+.gapb{align-self:center;font-size:13px;font-weight:800;color:#fff;border:none;border-radius:16px;padding:3px 4px;margin:3px 0;line-height:1.05;max-height:calc(100% - 6px);overflow:hidden}
+.gapb small{display:none;font-weight:600;opacity:.9}
+.gapb.play{filter:brightness(1.5);box-shadow:0 0 12px #fff}
+.btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.btns button{font-size:clamp(14px,4.4vw,17px);font-weight:800;padding:11px 2px;border-radius:12px;border:none;color:#fff;white-space:nowrap}
+@media (max-width:345px){ .mrow button{font-size:14px} #mBar{flex-basis:50px} }
+.up{background:#2e7d32}.down{background:#b23a48}.stop{background:#666}
+.btns button.play{outline:3px solid #fff}
+.sl{display:grid;grid-template-columns:72px 1fr 112px;align-items:center;gap:6px;font-size:15px}
+.sl span{color:var(--muted)} .sl b{color:var(--gold);text-align:right;font-size:15px}
+input[type=range]{width:100%;height:30px;margin:0;accent-color:var(--gold)}
+.free{flex:1;min-height:0}
+/* Μετρονόμος */
+.metro{background:#1d130d;border:2px solid #6b5a3e;border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
+.mrow{display:flex;align-items:center;gap:8px}
+.lamp{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5a4a30,#2a2014);border:3px solid var(--gold);transition:background .06s,box-shadow .06s}
+.lamp.on{background:radial-gradient(circle at 40% 35%,#ffffff,#ffe27a 45%,#ffb300);box-shadow:0 0 22px 8px #ffd34d}
+.lamp.on.first{background:radial-gradient(circle at 40% 35%,#ffffff,#ffb0b0 45%,#ff4d4d);box-shadow:0 0 22px 8px #ff6b6b}
+.mrow button{flex:1;min-width:0;font-size:16px;font-weight:800;padding:11px 2px;border-radius:12px;border:none;color:#fff;white-space:nowrap}
+#mGo{background:#2f6fd0} #mGo.run{background:#b23a48}
+#mSnd{background:#4a3466} #mBar{background:#5a3f22;flex:0 0 58px}
+.mrow input[type=range]{flex:1}
+.mrow b{color:var(--gold);font-size:16px;min-width:84px;text-align:right}
+/* Παράθυρο κλιμάκων */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+.sheet.open{display:flex}
+.box{background:var(--card);border:3px solid var(--gold);border-radius:20px;padding:14px;width:100%;max-width:440px}
+.box h2{margin:0 0 10px;color:var(--gold);font-size:22px;text-align:center}
+.box button{display:block;width:100%;margin:8px 0;font-size:21px;font-weight:800;padding:14px;border-radius:14px;border:3px solid transparent;background:#5a3f22;color:var(--text);text-align:left}
+.box button small{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:3px}
+.box button.on{border-color:var(--gold)}
+.box button.close{background:#666;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <button id="bScale">Κλίμακα ▾</button>
+    <button id="bTimbre">Ήχος</button>
+  </div>
+
+  <div class="info" id="info"></div>
+
+  <div class="ladder" id="ladder"></div>
+
+  <div class="btns">
+    <button class="up" id="bUp">▲ Ανάβαση</button>
+    <button class="down" id="bUpDown">▲▼ Πάνω κάτω</button>
+    <button class="stop" id="bStop">■ Στοπ</button>
+  </div>
+  <div class="sl"><span>Οκτάβα</span><input type="range" id="oct" min="-2" max="1" step="0.005" value="-1"><b id="octV"></b></div>
+  <div class="sl"><span>Κράτημα</span><input type="range" id="hold" min="2" max="21" step="1" value="20"><b id="holdV"></b></div>
+  <div class="sl"><span>Ένταση</span><input type="range" id="vol" min="0" max="1" step="0.05" value="0.75"><b id="volV"></b></div>
+  <!-- Μετρονόμος: φως που αναβοσβήνει στον χρόνο, με ή χωρίς ήχο -->
+  <div class="metro">
+    <div class="mrow"><div class="lamp" id="lamp"></div><button id="mGo">▶ Ξεκίνα</button><button id="mSnd">🔇 Σιωπηλό</button><button id="mBar">1 χρ.</button></div>
+    <div class="mrow"><span style="color:var(--muted);font-size:15px">Μετρονόμος</span><input type="range" id="bpm" min="40" max="180" step="1" value="72"><b id="bpmV"></b></div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet"><div class="box"><h2>Διάλεξε κλίμακα</h2><div id="scales"></div><button class="close" id="bClose">Κλείσιμο</button></div></div>
+
+<script src="foni-christos-par.js?v=2"></script>
+<script>
+// Αποκωδικοποίηση ήχου IMA ADPCM (η μορφή του αρχείου φωνής) — δουλεύει παντού, και στο iPhone
+window.FONI_ADPCM=window.FONI_ADPCM||(function(){
+  const STEP=[7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
+  const IDX=[-1,-1,-1,-1,2,4,6,8];
+  return function(ctx,n){
+    const bin=atob(n.adpcm), N=n.len, b=ctx.createBuffer(1,N,n.sr), a=b.getChannelData(0);
+    let pred=0, ix=0;
+    for(let i=0;i<N;i++){
+      const byte=bin.charCodeAt(i>>1), code=(i&1)?(byte>>4):(byte&15), st=STEP[ix];
+      let diff=st>>3; if(code&4) diff+=st; if(code&2) diff+=st>>1; if(code&1) diff+=st>>2;
+      pred=(code&8)?pred-diff:pred+diff; if(pred>32767) pred=32767; else if(pred<-32768) pred=-32768;
+      ix+=IDX[code&7]; if(ix<0) ix=0; else if(ix>88) ix=88;
+      a[i]=pred/32768;
+    }
+    return b;
+  };
+})();
+const NH = 260.74; // Νη (μεσαία οκτάβα)
+const SCALES = [
+  {name:'Διατονική', modes:'Α΄, Δ΄, Πλ.Α΄, Πλ.Δ΄',
+   names:['Νη','Πα','Βου','Γα','Δι','Κε','Ζω','Νη΄'],
+   hz:[260.74,293.33,321.60,347.33,391.11,440.00,482.40,521.48],
+   moria:[12,10,8,12,12,10,8]},
+  {name:'Μαλακή χρωματική', modes:'Β΄ ήχος',
+   names:['Νη','Πα','Βου','Γα','Δι','Κε','Ζω','Νη΄'],
+   base:NH, moria:[8,14,8,12,8,14,8]},
+  {name:'Σκληρή χρωματική', modes:'Πλ.Β΄ ήχος',
+   names:['Πα','Βου','Γα','Δι','Κε','Ζω','Νη΄','Πα΄'],
+   base:293.33, moria:[6,20,4,12,6,20,4]},
+  {name:'Εναρμόνια', modes:'Γ΄ ήχος, Βαρύς',
+   names:['Νη','Πα','Βου','Γα','Δι','Κε','Ζω ♭','Νη΄'],
+   base:NH, moria:[12,12,6,12,12,6,12]}
+];
+SCALES.forEach(s=>{ if(!s.hz){ let m=0; s.hz=[s.base]; s.moria.forEach(x=>{m+=x; s.hz.push(+(s.base*Math.pow(2,m/72)).toFixed(2));}); }});
+const OCTS=[{name:'Μπάσα',k:0.25},{name:'Ανδρική',k:0.5},{name:'Μεσαία',k:1},{name:'Ψηλή',k:2}];
+const FONIA=['','','Τριφωνία','Τετραφωνία','Πενταφωνία','Εξαφωνία','Επταφωνία','Διαπασών'];
+const SCALE_NOTE_LEN=0.8;
+const HAS_CH=!!(window.FONI_SETS&&FONI_SETS.christos_par);
+let cur=SCALES[0], timbre=HAS_CH?'christos':'voice', owner=null, timers=[], voices=[], ctx=null;
+let master, voiceIn, organIn, chIn, waves={}, CH=null;
+const TIMBRES=HAS_CH?['christos','voice','organ']:['voice','organ'];
+const TNAME={christos:'🎙 Χρίστος',voice:'🎙 Φωνή «α»',organ:'🎹 Όργανο'};
+
+const $=id=>document.getElementById(id);
+const K=()=>Math.pow(2,+$('oct').value);            // ομαλή αλλαγή ύψους (4 οκτάβες)
+const octName=()=>{ const v=+$('oct').value; return v<-1.5?'Μπάσα':v<-0.5?'Ανδρική':v<0.5?'Μεσαία':'Ψηλή'; };
+const oct=()=>({name:octName(),k:K()});
+const f=i=>cur.hz[i]*K();
+const scaleInfo=()=>`<b>${cur.name}</b> · ${cur.modes}`;
+const HOLD=()=>{ const v=+$('hold').value; return v>20?3600:v; };
+function color(m){ if(m===12)return 'var(--c12)'; if(m===10)return 'var(--c10)'; if(m===8)return 'var(--c8)'; if(m<8)return 'var(--csmall)'; return 'var(--cbig)'; }
+
+/* ---------- Ήχος ---------- */
+function makeWave(amps){ const re=new Float32Array(amps.length+1), im=new Float32Array(amps.length+1); amps.forEach((a,i)=>im[i+1]=a); return ctx.createPeriodicWave(re,im); }
+function reverbIR(sec){
+  const rate=ctx.sampleRate, n=Math.floor(rate*sec), b=ctx.createBuffer(2,n,rate);
+  for(let c=0;c<2;c++){ const d=b.getChannelData(c); for(let i=0;i<n;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3); } }
+  return b;
+}
+function bp(freq,q,gain,src,dst){ const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq; f.Q.value=q; const g=ctx.createGain(); g.gain.value=gain; src.connect(f); f.connect(g); g.connect(dst); }
+function audio(){
+  if(!ctx){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    // Πλούσια κυματομορφή για φωνή (όλες οι αρμονικές) και για όργανο
+    const saw=[]; for(let n=1;n<=48;n++) saw.push(1/n);
+    waves.voice=makeWave(saw);
+    waves.organ=makeWave([1,0.55,0.35,0.22,0.14,0.08,0.05,0.03,0.02]);
+    master=ctx.createGain(); master.gain.value=+$('vol').value;
+    const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4; comp.attack.value=0.02; comp.release.value=0.3;
+    const sum=ctx.createGain();
+    // Φωνή «α»: φίλτρα φωνηέντων (formants)
+    voiceIn=ctx.createGain();
+    bp(730,4,2.2,voiceIn,sum); bp(1090,6,1.4,voiceIn,sum); bp(2440,9,0.6,voiceIn,sum);
+    const body=ctx.createBiquadFilter(); body.type='lowpass'; body.frequency.value=420; body.Q.value=0.7;
+    const bodyG=ctx.createGain(); bodyG.gain.value=0.9; voiceIn.connect(body); body.connect(bodyG); bodyG.connect(sum);
+    // Όργανο
+    organIn=ctx.createGain(); const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3500; organIn.connect(lp); lp.connect(sum);
+    // Η φωνή του Χρίστου: κατευθείαν στην αντήχηση, χωρίς φίλτρα
+    chIn=ctx.createGain(); chIn.gain.value=1.6; chIn.connect(sum);
+    if(HAS_CH) try{ CH=FONI_SETS.christos_par.notes.map(n=>({n:n.n,hz:n.hz,va:n.va,ls:n.ls/n.sr,le:n.le/n.sr,buf:FONI_ADPCM(ctx,n)})); }catch(e){ CH=null; }
+    // Αντήχηση εκκλησίας
+    const dry=ctx.createGain(); dry.gain.value=0.85; const wet=ctx.createGain(); wet.gain.value=0.35;
+    const conv=ctx.createConvolver(); conv.buffer=reverbIR(2.8);
+    sum.connect(dry); sum.connect(conv); conv.connect(wet); dry.connect(comp); wet.connect(comp);
+    comp.connect(master); master.connect(ctx.destination);
+  }
+  if(ctx.state==='suspended') ctx.resume();
+}
+// Όνομα φθόγγου → δείγμα της φωνής του Χρίστου (π.χ. «Νη΄», «Ζω ♭» → Νη, Ζω)
+const KEY={'Νη':'Ni','Πα':'Pa','Βου':'Vou','Γα':'Ga','Δι':'Di','Κε':'Ke','Ζω':'Zo'};
+const keyOf=name=>KEY[String(name).replace(/[΄'’ ♭#]/g,'')]||'Ni';
+function pickCh(i,freq){ const k=keyOf(cur.names[i]); let best=null, bd=1e9;
+  for(const s of CH) if(s.n===k){ const d=Math.abs(Math.log(freq/s.hz)); if(d<bd){ bd=d; best=s; } }
+  return best; }
+// Ένας φθόγγος. i: ποιος φθόγγος της κλίμακας · leg: δένει κατευθείαν με τον επόμενο (χωρίς παύση)
+function tone(i,start,len,o={}){
+  const freq=f(i), gain=o.gain||0.3, t=ctx.currentTime+start+0.06, g=ctx.createGain();
+  const rel=o.leg?0.07:Math.min(0.35,len*0.4), atk=o.leg?0.02:(o.attack!=null?o.attack:0.25);
+  const v={g,i,oscs:[],src:null};
+  if(timbre==='christos'&&CH){
+    // Η φωνή του Χρίστου: λέει το όνομα του φθόγγου και κρατά όσο χρειάζεται
+    const s=pickCh(i,freq), rate=freq/s.hz, src=ctx.createBufferSource();
+    src.buffer=s.buf; src.loop=true; src.loopStart=s.ls; src.loopEnd=s.le; src.playbackRate.value=rate;
+    const pre=Math.min(s.va,0.09)/rate;                     // το σύμφωνο ακούγεται λίγο πριν, το φωνήεν πέφτει στον χρόνο
+    const st=Math.max(ctx.currentTime,t-pre), hold=t+len;
+    g.gain.setValueAtTime(0,st); g.gain.linearRampToValueAtTime(gain*1.4,st+0.012);
+    g.gain.setValueAtTime(gain*1.4,hold-(o.leg?0:rel)); g.gain.linearRampToValueAtTime(0,hold+(o.leg?rel:0));
+    src.connect(g); g.connect(chIn); src.start(st); src.stop(hold+rel+0.05);
+    v.src=src; v.s=s;
+  }else{
+    const end=t+len;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+atk);
+    g.gain.setValueAtTime(gain,end-(o.leg?0:rel)); g.gain.linearRampToValueAtTime(0,end+(o.leg?rel:0));
+    g.connect(timbre==='voice'?voiceIn:organIn);
+    v.oscs=[-6,0,6].map((cents,k)=>{
+      const os=ctx.createOscillator(), og=ctx.createGain();
+      os.setPeriodicWave(waves[timbre]); os.frequency.value=freq; os.detune.value=cents;
+      og.gain.value=k===1?0.45:0.3; os.connect(og); og.connect(g);
+      os.start(t); os.stop(end+rel+0.05); return os;
+    });
+  }
+  voices.push(v);
+}
+function stopAll(){
+  timers.forEach(clearTimeout); timers=[];
+  if(ctx){ const t=ctx.currentTime; voices.forEach(v=>{ try{ v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(v.g.gain.value,t); v.g.gain.linearRampToValueAtTime(0,t+0.3);
+    v.oscs.forEach(o=>o.stop(t+0.35)); if(v.src) v.src.stop(t+0.35); }catch(e){} }); }
+  voices=[]; owner=null;
+  document.querySelectorAll('.play').forEach(e=>e.classList.remove('play'));
+}
+// Πρώτο πάτημα ξεκινά, δεύτερο πάτημα στο ίδιο κουμπί σταματά
+function begin(key,total){
+  if(owner===key){ stopAll(); $('info').innerHTML=scaleInfo(); return false; }
+  stopAll(); audio(); owner=key;
+  timers.push(setTimeout(()=>{ owner=null; $('info').innerHTML=scaleInfo(); },total*1000+400));
+  return true;
+}
+function flash(el,at,len){ if(!el)return; timers.push(setTimeout(()=>el.classList.add('play'),at*1000+60)); timers.push(setTimeout(()=>el.classList.remove('play'),(at+len)*1000+60)); }
+const noteEl=i=>document.querySelector(`.note[data-i="${i}"]`);
+
+function playNote(i){
+  const len=HOLD();
+  if(!begin('n'+i,len)) return;
+  tone(i,0,len,{attack:timbre==='christos'?0.012:0.25}); flash(noteEl(i),0,len);
+  $('info').innerHTML=`<b>${cur.names[i]}</b> · ${f(i).toFixed(2)} Hz · ${oct().name}`;
+}
+// Διάστημα: ο πρώτος φθόγγος, κατευθείαν ο δεύτερος, και μετά οι δύο μαζί
+function playPair(a,b,btn){
+  const d=SCALE_NOTE_LEN, len=HOLD(), total=2*d+len;
+  if(!begin('g'+b,total)) return;
+  tone(a,0,d,{leg:true}); flash(noteEl(a),0,d);
+  tone(b,d,d,{leg:true}); flash(noteEl(b),d,d);
+  tone(a,2*d,len,{gain:0.22,attack:0.05}); tone(b,2*d,len,{gain:0.22,attack:0.05});
+  flash(noteEl(a),2*d,len); flash(noteEl(b),2*d,len); flash(btn,0,total);
+  $('info').innerHTML=`<b>${cur.names[a]} – ${cur.names[b]}</b> · ${cur.moria[a]} μόρια`;
+}
+// Κλίμακα: κάθε φθόγγος δένει κατευθείαν με τον επόμενο, χωρίς παύση· η κορυφή κρατά λίγο περισσότερο
+function playScale(both){
+  const d=SCALE_NOTE_LEN, seq=both?[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
+  const lens=seq.map((i,k)=>(k===seq.length-1||(both&&k===7))?2*d:d);
+  const total=lens.reduce((a,b)=>a+b,0), btn=both?$('bUpDown'):$('bUp');
+  if(!begin(both?'ud':'up',total)) return;
+  let t=0; seq.forEach((i,k)=>{ tone(i,t,lens[k],{leg:k<seq.length-1}); flash(noteEl(i),t,lens[k]); t+=lens[k]; });
+  flash(btn,0,total);
+  $('info').innerHTML=`<b>${cur.name}</b> · ${cur.moria.join('-')}`;
+}
+
+/* ---------- Οθόνη ---------- */
+function render(){
+  const L=$('ladder'); L.innerHTML='';
+  for(let r=0;r<8;r++){            // r=0 πάνω (Νη΄) … r=7 κάτω (Νη)
+    const i=7-r;
+    const b=document.createElement('button'); b.className='note'; b.dataset.i=i;
+    b.style.gridColumn='1'; b.style.gridRow=`${2*r+1} / span 2`;
+    b.innerHTML=`<span>${cur.names[i]}</span><span class="hz">${f(i).toFixed(1)} Hz</span>`;
+    b.onclick=()=>playNote(i);
+    L.appendChild(b);
+    if(r<7){
+      const lo=i-1, m=cur.moria[lo], gb=document.createElement('button');
+      gb.className='gapb'; gb.style.gridColumn='2'; gb.style.gridRow=`${2*r+2} / span 2`; gb.style.background=color(m);
+      gb.innerHTML=`${m} μόρια<small>${cur.names[lo]}–${cur.names[i]}</small>`;
+      gb.onclick=()=>playPair(lo,i,gb);
+      L.appendChild(gb);
+    }
+  }
+  $('bScale').textContent=cur.name+' ▾';
+}
+function renderScales(){
+  const S=$('scales'); S.innerHTML='';
+  SCALES.forEach(s=>{ const b=document.createElement('button'); b.className=s===cur?'on':'';
+    b.innerHTML=`${s.name}<small>${s.modes} · ${s.moria.join(' – ')} μόρια</small>`;
+    b.onclick=()=>{ stopAll(); cur=s; render(); $('sheet').classList.remove('open'); $('info').innerHTML=scaleInfo(); };
+    S.appendChild(b); });
+}
+function showSliders(){
+  $('octV').textContent=`${octName()} ${(NH*K()).toFixed(0)}`;
+  $('holdV').textContent=+$('hold').value>20?'Συνεχώς':$('hold').value+' δευτ.';
+  $('volV').textContent=Math.round(+$('vol').value*100)+'%';
+}
+$('bScale').onclick=()=>{ renderScales(); $('sheet').classList.add('open'); };
+$('bClose').onclick=()=>$('sheet').classList.remove('open');
+$('sheet').onclick=e=>{ if(e.target.id==='sheet') $('sheet').classList.remove('open'); };
+$('bUp').onclick=()=>playScale(false); $('bUpDown').onclick=()=>playScale(true);
+$('bStop').onclick=()=>{ stopAll(); $('info').innerHTML=scaleInfo(); };
+$('bTimbre').onclick=()=>{ stopAll(); timbre=TIMBRES[(TIMBRES.indexOf(timbre)+1)%TIMBRES.length]; $('bTimbre').textContent=TNAME[timbre]; };
+$('bTimbre').textContent=TNAME[timbre];
+// Το ύψος αλλάζει ομαλά — και ο φθόγγος που ακούγεται ακολουθεί τη γραμμή χωρίς να κόβεται
+$('oct').oninput=()=>{
+  showSliders();
+  document.querySelectorAll('.note').forEach(b=>{ b.querySelector('.hz').textContent=f(+b.dataset.i).toFixed(1)+' Hz'; });
+  if(ctx){ const t=ctx.currentTime; voices.forEach(v=>{ if(v.i==null) return; v.oscs.forEach(o=>o.frequency.setTargetAtTime(f(v.i),t,0.04));
+    if(v.src) v.src.playbackRate.setTargetAtTime(f(v.i)/v.s.hz,t,0.04); }); }
+  if(owner&&owner[0]==='n'){ const i=+owner.slice(1); $('info').innerHTML=`<b>${cur.names[i]}</b> · ${f(i).toFixed(2)} Hz · ${octName()}`; }
+};
+$('hold').oninput=showSliders;
+$('vol').oninput=()=>{ showSliders(); if(master) master.gain.value=+$('vol').value; };
+/* ---------- Μετρονόμος ----------
+   Ο χρόνος μετριέται από το «ρολόι» του ήχου (ακριβές), όχι από τη σελίδα. Το φως ανάβει σε κάθε χτύπο·
+   με «2/3/4 χρ.» ο πρώτος χτύπος κάθε μέτρου ανάβει κόκκινος. Ο ήχος του χτύπου είναι προαιρετικός. */
+const MET={on:false,snd:false,bar:1,next:0,n:0,beats:[],timer:null,raf:0};
+const bpm=()=>+$('bpm').value;
+function loadMet(){ try{ const o=JSON.parse(localStorage.getItem('dia-metro')||'{}'); if(o.bpm) $('bpm').value=o.bpm; MET.snd=!!o.snd; MET.bar=o.bar||1; }catch(e){} }
+function saveMet(){ try{ localStorage.setItem('dia-metro',JSON.stringify({bpm:bpm(),snd:MET.snd,bar:MET.bar})); }catch(e){} }
+function showMet(){ $('bpmV').textContent=bpm()+' /λεπτό'; $('mSnd').textContent=innerWidth<345?(MET.snd?'🔊':'🔇'):(MET.snd?'🔊 Με ήχο':'🔇 Σιωπηλό');
+  $('mBar').textContent=MET.bar===1?'1 χρ.':MET.bar+' χρ.'; $('mGo').textContent=MET.on?'■ Σταμάτα':'▶ Ξεκίνα'; $('mGo').classList.toggle('run',MET.on); }
+function click(t,first){
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type='sine'; o.frequency.value=first?1760:1175;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(first?0.9:0.6,t+0.002); g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t+0.08);
+}
+function metTick(){
+  if(!MET.on) return;
+  const ahead=ctx.currentTime+0.12;
+  while(MET.next<ahead){
+    const first=MET.bar>1&&MET.n%MET.bar===0;
+    if(MET.snd) click(MET.next,first);
+    MET.beats.push({t:MET.next,first});
+    MET.n++; MET.next+=60/bpm();
+  }
+  MET.timer=setTimeout(metTick,25);
+}
+function metDraw(){
+  if(!MET.on){ $('lamp').className='lamp'; return; }
+  const now=ctx.currentTime; let lit=null;
+  while(MET.beats.length&&MET.beats[0].t+0.12<now) MET.beats.shift();
+  for(const b of MET.beats) if(b.t<=now&&now<b.t+0.12){ lit=b; break; }
+  $('lamp').className='lamp'+(lit?' on'+(lit.first?' first':''):'');
+  MET.raf=requestAnimationFrame(metDraw);
+}
+function metStart(){ audio(); MET.on=true; MET.n=0; MET.beats=[]; MET.next=ctx.currentTime+0.08; metTick(); cancelAnimationFrame(MET.raf); MET.raf=requestAnimationFrame(metDraw); showMet(); }
+function metStop(){ MET.on=false; clearTimeout(MET.timer); cancelAnimationFrame(MET.raf); MET.beats=[]; $('lamp').className='lamp'; showMet(); }
+$('mGo').onclick=()=>{ MET.on?metStop():metStart(); };
+$('mSnd').onclick=()=>{ MET.snd=!MET.snd; saveMet(); showMet(); };
+$('mBar').onclick=()=>{ MET.bar=MET.bar===1?2:MET.bar===2?3:MET.bar===3?4:1; MET.n=0; saveMet(); showMet(); };
+$('bpm').oninput=()=>{ showMet(); };
+$('bpm').onchange=saveMet;
+loadMet(); showMet();
+showSliders(); render(); $('info').innerHTML=scaleInfo();
+</script>
+</body>
+</html>
